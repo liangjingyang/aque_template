@@ -13,7 +13,10 @@
 -define(APPNAME, aque).
 
 start() ->
-    application:start(?APPNAME).
+    lager:start(),
+    application:start(?APPNAME),
+    lager:info(lists:concat([?APPNAME, " start!"])),
+    ok.
 
 stop() ->
     application:stop(?APPNAME),

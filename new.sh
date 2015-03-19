@@ -35,6 +35,10 @@ mv ${APPNAME}/src/aque_sup.erl ${APPNAME}/src/${APPNAME}_sup.erl
 sed -i "s/aque/${APPNAME}/g" ${APPNAME}/src/aque_server.erl
 mv ${APPNAME}/src/aque_server.erl ${APPNAME}/src/${APPNAME}_server.erl
 
-mkdir ${APPNAME}/log ${APPNAME}/include ${APPNAME}/config
+# config/aque.config
+sed -i "s/aque/${APPNAME}/g" ${APPNAME}/config/aque.config
+mv ${APPNAME}/config/aque.config ${APPNAME}/config/${APPNAME}.config
+
+mkdir ${APPNAME}/log ${APPNAME}/include
 
 echo DONE!
