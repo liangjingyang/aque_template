@@ -9,13 +9,10 @@ debug() {
         -remsh ${NODENAME}@127.0.0.1
 }
 
-source init.sh
-
 NUM=1
 if [ "$1" != '' ]; then
     NUM=$1
 fi
-
 
 debug ${NUM}
 

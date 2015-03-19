@@ -15,13 +15,12 @@
          code_change/3
         ]).
 
--record(state, {}).
 
 start_link() -> 
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []). 
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []). 
 
 init([]) ->
-    {ok, #state{}}.
+    {ok, []}.
 
 handle_call(_Request, _From, State) ->
     {reply, ok, State}.
