@@ -1,0 +1,13 @@
+{application, aque, [
+    {description, "aque"},
+    {vsn, "0.1.0"},
+    {id, "aque"},
+    {modules, []},
+    {registered, []},
+    {applications, [
+        kernel,
+        stdlib
+    ]},
+    {mod, {aque_app, []}},
+    {env, []}
+]}.

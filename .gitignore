@@ -1,0 +1,9 @@
+ebin
+log
+deps
+tags
+cscope.*
+*.pid
+*.log
+*.dump
+*.beam
