@@ -7,3 +7,4 @@ cscope.*
 *.log
 *.dump
 *.beam
+.rebar
