@@ -40,6 +40,8 @@
         {i, "src"},
         {i, "src/*"},
         {i, "src/*/*"},
+        {parse_transform, lager_transform},
+        {lager_truncation_size, 4096},
         report,
         bin_opt_info,
         warn_obsolete_guard,
