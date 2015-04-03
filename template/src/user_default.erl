@@ -33,14 +33,13 @@
 -define(NONE, none).
 -define(COMPILE_OPT, 
     [
-        {i, "."},
-        {i, "../"},
-        {i, "../include"},
-        {i, "../deps/*/include"},
-        {i, "../deps/*/src"},
-        {i, "../src"},
-        {i, "../src/*"},
-        {i, "../src/*/*"},
+        {i, ""},
+        {i, "include"},
+        {i, "deps/*/include"},
+        {i, "deps/*/src"},
+        {i, "src"},
+        {i, "src/*"},
+        {i, "src/*/*"},
         report,
         bin_opt_info,
         warn_obsolete_guard,
@@ -261,7 +260,7 @@ find_file(Mod) ->
             Mod
     end,
     % 寻找模块
-    Root = "../",
+    {ok, Root} = file:get_cwd(),
     %?UPRINT("root路径:~s\n", [Root]),
     [begin
         case filelib:wildcard(FindPath) of

@@ -148,7 +148,8 @@ do_find(ConfigName,Key) ->
 %% ====================================================================
 
 get_config_path() ->
-    c:pwd() ++ "/config/".
+    {ok, Path} = file:get_cwd(),
+    Path ++ "/config/".
 
 
 catch_do_load_config({AtomName,ConfigModuleName,FilePath,FileType}) ->
