@@ -4,7 +4,6 @@
 
 -compile(export_all).
 
-
 %% @doc convert float to string,  f2s(1.5678) -> 1.57
 f2s(N) when is_integer(N) ->
     integer_to_list(N) ++ ".00";
@@ -19,8 +18,8 @@ to_atom(Msg) when is_binary(Msg) ->
     erlang:list_to_atom(binary_to_list(Msg));
 to_atom(Msg) when is_list(Msg) -> 
     erlang:list_to_atom(Msg);
-to_atom(_) -> 
-    throw(other_value).  %%list_to_atom("").
+to_atom(_Msg) -> 
+    throw({error, {?MODULE, to_atom, _Msg, erlang:get_stacktrace()}}).
 
 %% @doc convert other type to list
 to_list(Msg) when is_list(Msg) -> 
@@ -33,8 +32,8 @@ to_list(Msg) when is_integer(Msg) ->
     integer_to_list(Msg);
 to_list(Msg) when is_float(Msg) -> 
     f2s(Msg);
-to_list(_) ->
-    throw(other_value).
+to_list(_Msg) ->
+    throw({error, {?MODULE, to_list, _Msg, erlang:get_stacktrace()}}).
 
 %% @doc convert other type to binary
 to_binary(Msg) when is_binary(Msg) -> 
@@ -49,7 +48,7 @@ to_binary(Msg) when is_integer(Msg) ->
 to_binary(Msg) when is_float(Msg) -> 
     list_to_binary(f2s(Msg));
 to_binary(_Msg) ->
-    throw(other_value).
+    throw({error, {?MODULE, to_binary, _Msg, erlang:get_stacktrace()}}).
 
 %% @doc convert other type to float
 to_float(Msg)->
@@ -68,7 +67,7 @@ to_integer(Msg) when is_list(Msg) ->
 to_integer(Msg) when is_float(Msg) -> 
     round(Msg);
 to_integer(_Msg) ->
-    throw(other_value).
+    throw({error, {?MODULE, to_integer, _Msg, erlang:get_stacktrace()}}).
 
 %% @doc convert other type to tuple
 to_tuple(T) when is_tuple(T) -> T;
