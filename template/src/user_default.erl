@@ -14,17 +14,16 @@
 -define(DEPS_EBIN_DIR, "deps/*/ebin/").
 -define(SRC_DIR, "src/").
 -define(DEPS_SRC_DIR, "deps/*/src/").
+-define(DEPS_INCLUDE_DIR, "deps/*/include/").
+-define(INCLUDE_DIR, "include/").
 
--define(NONE, none).
--define(COMPILE_OPT, 
+get_compile_opts() ->
+    AllDir = all_dir(include_dir()) ++ all_dir(deps_include_dir()),
+    IncludeDir = lists:map(fun(D) ->
+                {i, D}
+        end, AllDir),
+    IncludeDir ++ 
     [
-        {i, ""},
-        {i, "include"},
-        {i, "deps/*/include"},
-        {i, "deps/*/src"},
-        {i, "src"},
-        {i, "src/*"},
-        {i, "src/*/*"},
         {parse_transform, lager_transform},
         {lager_truncation_size, 4096},
         report,
@@ -33,8 +32,7 @@
         warn_shadow_vars,
         %warnings_as_errors,
         verbose
-    ]
-    ).
+    ].
 
 %% 禁用的命令
 q() ->
@@ -46,21 +44,26 @@ q() ->
 ucc(Mod) when is_atom(Mod) ->
     ucc(Mod, true).
 ucc(Mod, IsUpdate) ->
-    aconfig:gen_beam(Mod),
-    case IsUpdate of
-        true ->
-            ul(Mod),
-            ?UPRINT("~n====== compile and update complete! ======",[]);
-        false ->
-            ?UPRINT("~n====== compile complete! ======",[])
+    case catch aconfig:gen_beam(Mod) of
+        ok ->
+            case IsUpdate of
+                true ->
+                    ul(Mod),
+                    ?UPRINT("~n====== compile and update complete! ======",[]);
+                false ->
+                    ?UPRINT("~n====== compile complete! ======",[])
+            end;
+        Error ->
+            Error
     end.
+    
 
 %% .erl file
 uce(Mod) when is_atom(Mod) ->
    uce(Mod, true).
 uce(Mod, IsUpdate) ->
     case catch find_file(atom_to_list(Mod)) of
-        ?NONE ->
+        [] ->
             {error, {no_mod, Mod}};
         {ok, FilePath} ->
             ?UPRINT("~ncompiling:~s", [FilePath]),
@@ -82,44 +85,49 @@ ul(Mod) when is_atom(Mod) ->
     ul([Mod]);
 ul(Mods) ->
     Nodes = [node()|nodes()],
-    ?UPRINT("~nupdate module: ~w~nupdate nodes: ~w", [Mods, Nodes]),
+    ?UPRINT("~nupdate module: ~p~nupdate nodes: ~w", [Mods, Nodes]),
     [rpc:call(Node, ?MODULE, uload, [Mods])||Node<-Nodes].
 
 uload([]) -> ok;
-uload([FileName | T]) ->
+uload([Mod | T]) when is_atom(Mod) ->
+    case c:l(Mod) of
+        {module, _} ->
+            uload(T);
+        {error, Error} ->
+            {Error, Mod}
+    end;
+uload([FileName | T]) when is_list(FileName) ->
     case filename:extension(FileName) of
         ".beam" ->
-            case c:l(filename:basename(FileName, ".beam")) of
+            case c:l(list_to_atom(filename:basename(FileName, ".beam"))) of
                 {module, _} ->
                     uload(T);
                 {error, Error} ->
                     {Error, FileName}
             end;
         _ ->
-            uload(T)
+            {not_beam_file, FileName}
     end.
 
 find_file(Mod) ->
-    FileName =
     case filename:extension(Mod) of
         "" ->
-            Mod ++ ".erl";
+            FileName = Mod ++ ".erl";
         ".erl" ->
-            Mod
+            FileName = Mod
     end,
-    % 寻找模块
-    [
-        begin
-                case filelib:wildcard(Dir ++ "/" ++ FileName) of
-                    [] ->
-                        ok;
-                    [File] ->
-                        throw({ok, File})
-                end
-        end 
-        || Dir <- [all_dir(src_dir()) ++ all_dir(deps_src_dir())]
-    ],
-    ?NONE.
+    AllDir = all_dir(src_dir()) ++ all_dir(deps_src_dir()),
+    find_file2(AllDir, FileName).
+
+find_file2([], _FileName) ->
+    [];
+find_file2([Dir|AllDir], FileName) -> 
+    case filelib:wildcard(Dir ++ "/" ++ FileName) of
+        [] ->
+            find_file2(AllDir, FileName);
+        [File] ->
+            {ok, File}
+    end.
 
 compile_file(FilePath) ->
     compile_file(FilePath, []).
@@ -127,7 +135,7 @@ compile_file(FilePath) ->
 compile_file(FilePath, OtherOpts) ->
     SrcN = string:str(FilePath, "src"),
     Path = string:substr(FilePath, 1, SrcN - 1),
-    Opts = lists:append([[{outdir, Path ++ "ebin"} | ?COMPILE_OPT],OtherOpts]),
+    Opts = lists:append([[{outdir, Path ++ "ebin"} | get_compile_opts()],OtherOpts]),
     case compile:file(FilePath, Opts) of
         {ok, _Data} ->
             ?UPRINT("compile succ:~p!", [_Data]),
@@ -144,8 +152,12 @@ compile_file(FilePath, OtherOpts) ->
 
    
 get_root_dir() ->
-    {ok, [[Root]]} = init:get_argument(root_path),
-    Root.
+    case init:get_argument(root_path) of
+        {ok, [[Root]]} ->
+            Root;
+        _ ->
+            "."
+    end.
 
 src_dir() ->
     get_root_dir() ++ "/" ++ ?SRC_DIR.
@@ -159,6 +171,12 @@ ebin_dir() ->
 deps_ebin_dir() ->
     get_root_dir() ++ "/" ++ ?DEPS_EBIN_DIR.
 
+deps_include_dir() ->
+    get_root_dir() ++ "/" ++ ?DEPS_INCLUDE_DIR.
+
+include_dir() ->
+    get_root_dir() ++ "/" ++ ?INCLUDE_DIR.
+
 all_erl_file() ->
     Files = all_file(src_dir()) ++ all_file(deps_src_dir()),
     [F||F<-Files, filename:extension(F) =:= ".erl"].
@@ -168,7 +186,7 @@ all_beam_file() ->
     [F||F<-Files, filename:extension(F) =:= ".beam"].
 
 all_dir(Dir) ->
-    all_dir2(filelib:wildcard(Dir ++ "/*"), [Dir]).
+    all_dir2(filelib:wildcard(Dir ++ "/*"), filelib:wildcard(Dir)).
 
 all_dir2([], Acc) ->
     Acc;

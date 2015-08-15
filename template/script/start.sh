@@ -1,13 +1,12 @@
 #!/bin/bash
 
-cd $(dirname ${BASH_SOURCE})
-cd ..
+SCRIPT_PATH=`cd $(dirname ${BASH_SOURCE}); pwd`
 
-ROOT_PATH=`pwd`
+ROOT_PATH=`cd ${SCRIPT_PATH}/..; pwd` 
 NODE_NAME=`basename $ROOT_PATH`
-cd $(dirname ${BASH_SOURCE})
+cd ${SCRIPT_PATH}
+source ${SCRIPT_PATH}/init.sh
 
-source init.sh
 
 erl +P $ERL_MAX_PROCESSES \
     +K $POLL \

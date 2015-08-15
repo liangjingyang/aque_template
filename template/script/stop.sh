@@ -1,21 +1,14 @@
 #!/bin/bash
 
-cd $(dirname ${BASH_SOURCE})
-cd ..
+SCRIPT_PATH=`cd $(dirname ${BASH_SOURCE}); pwd`
 
-ROOT_PATH=`pwd`
+ROOT_PATH=`cd ${SCRIPT_PATH}/..; pwd` 
 NODE_NAME=`basename $ROOT_PATH`
-cd $(dirname ${BASH_SOURCE})
-
-source init.sh
-
-NUM=1
-if [ "$1" != '' ]; then
-    NUM=$1
-fi
+cd ${SCRIPT_PATH}
+source ${SCRIPT_PATH}/init.sh
 
 erl -pa ${ROOT_PATH}/ebin ${ROOT_PATH}/deps/*/ebin \
-    -name ${NODE_NAME}_stop_$NUM@127.0.0.1 \
+    -name ${NODE_NAME}_stop@127.0.0.1 \
     -setcookie $COOKIE \
     -noinput \
     -root_path ${ROOT_PATH}/ \

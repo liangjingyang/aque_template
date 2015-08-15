@@ -26,10 +26,10 @@ if [ -z $PORT ]; then
     PORT=22
 fi
 
-cd $(dirname ${BASH_SOURCE})
-cd ..
+SCRIPT_PATH=`cd $(dirname ${BASH_SOURCE}); pwd`
 
-ROOT_PATH=`pwd`
+ROOT_PATH=`cd ${SCRIPT_PATH}/..; pwd` 
+
 
 scp -P $PORT ${ROOT_PATH}/ebin/$BEAMFILE.beam $IP:${REMOTE_PATH}/ebin/
 ssh -p $PORT $IP "cd ${REMOTE_PATH}/script; bash load_beam.sh"

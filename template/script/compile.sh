@@ -1,13 +1,12 @@
 #!/bin/bash
 
-cd $(dirname ${BASH_SOURCE})
-cd ..
-./rebar compile
+SCRIPT_PATH=`cd $(dirname ${BASH_SOURCE}); pwd`
 
-ROOT_PATH=`pwd`
+ROOT_PATH=`cd ${SCRIPT_PATH}/..; pwd` 
 NODE_NAME=`basename $ROOT_PATH`
-
 COOKIE=cookie
+
+./rebar compile
 
 erl -pa ${ROOT_PATH}/ebin ${ROOT_PATH}/deps/*/ebin \
     -noinput \

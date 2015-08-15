@@ -75,7 +75,7 @@ do_list(ConfigName) ->
     ConfigName:list().
 
 do_find(ConfigName,Key) ->
-    ConfigName:find_by_key(Key).
+    ConfigName:find(Key).
 
 get_root_dir() ->
     {ok, [[Root]]} = init:get_argument(root_path),
@@ -84,9 +84,9 @@ get_root_dir() ->
 get_config_dir() ->
     get_root_dir() ++ "/config/".
 
-do_gen_beam({Name, _, _} = ConfRec) ->
+do_gen_beam({Name, _, _, _} = ConfRec) ->
     {ok, Code} = catch_do_load_config(ConfRec),
-    FileName = lists:concat([get_root_dir(), "/ebin/", Name , ".beam"]),
+    FileName = lists:concat([get_root_dir(), "/ebin/", Name, ".beam"]),
     file:write_file(FileName, Code, [write, binary]),
     ok.
 
@@ -127,7 +127,7 @@ do_load_gen_src(Name, KeyType, KeyValues, ValList)->
     try
         Src = gen_src(Name, KeyType, KeyValues, ValList),
         {Mod, Code} = dynamic_compile:from_string(Src),
-        code:load_binary(Mod, misc:to_list(Name) ++ ".erl", Code),
+        code:load_binary(Mod, alib:to_list(Name) ++ ".erl", Code),
         {ok, Code}
     catch
         _Error:Reason -> 
@@ -151,7 +151,7 @@ gen_src(Name, KeyType, KeyValues, ValList) ->
             KeyValues2 = KeyValues
     end,
     Cases = lists:foldl(fun({Key, Value}, C) ->
-                lists:concat([C, lists:flatten(io_lib:format("find_by_key(~w) -> ~w;\n", [Key, Value]))])
+                lists:concat([C, lists:flatten(io_lib:format("find(~w) -> ~w;\n", [Key, Value]))])
         end,
         "",
         KeyValues2),
@@ -159,12 +159,12 @@ gen_src(Name, KeyType, KeyValues, ValList) ->
     StrList = lists:flatten(io_lib:format("     ~w\n", [ValList])),
 
     "-module(" ++ 
-    misc:to_list(Name) ++ 
+    alib:to_list(Name) ++ 
     ").\n" ++ 
-    "-export([list/0,find_by_key/1]).\n" ++ 
+    "-export([list/0,find/1]).\n" ++ 
     "list()->" ++ 
     StrList ++
     ".\n\n" ++ 
     Cases ++
-    "find_by_key(_Key) -> undefined.".
+    "find(_Key) -> undefined.\n".
 

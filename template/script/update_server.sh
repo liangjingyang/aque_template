@@ -1,7 +1,8 @@
 #!/bin/bash
 
-cd $(dirname ${BASH_SOURCE})
-cd ..
+SCRIPT_PATH=`cd $(dirname ${BASH_SOURCE}); pwd`
+ROOT_PATH=`cd ${SCRIPT_PATH}/..; pwd` 
+cd ${SCRIPT_PATH}/..
 
 IP=$1
 REMOTE_PATH=$2

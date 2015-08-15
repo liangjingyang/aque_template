@@ -5,11 +5,13 @@
 
 -define(UNIXTIME_BASE, 62167219200).
 
+-include("app.hrl").
+
 get_time_zone() ->
-    case application:get_env(time_zone) of
+    case application:get_env(?APP_NAME, time_zone) of
         undefined ->
             0;
-        Zone ->
+        {ok, Zone} ->
             Zone
     end.
 

@@ -10,20 +10,21 @@
          stop/1
         ]).
 
--define(APPNAME, aque).
+-include("app.hrl").
 
 start() ->
     lager:start(),
-    application:start(?APPNAME),
-    lager:info(lists:concat([?APPNAME, " start!"])),
+    application:start(?APP_NAME),
+    lager:info(lists:concat([?APP_NAME, " start!"])),
     ok.
 
 stop() ->
-    application:stop(?APPNAME),
+    application:stop(?APP_NAME),
     timer:sleep(1000),
     erlang:halt(0).
 
 start(_Type, _Args) ->
+    aconfig:init(),
     aque_sup:start_link().
 
 stop(_State) ->
