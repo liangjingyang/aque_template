@@ -20,22 +20,18 @@ zone_diff_sec() ->
 
 %% seconds
 unixtime() ->
-    {A, B, _} = erlang:now(),
-    A * 1000000 + B.
+    erlang:system_time(seconds).
 
 %% milliseconds
 unixtime_milli() ->
-    {A, B, C} = erlang:now(),
-    A * 1000000000 + B*1000 + C div 1000.
+    erlang:system_time(milli_seconds).
 
 %% microseconds
 unixtime_micro() ->
-    {A, B, C} = erlang:now(),
-    A * 1000000000 + B*1000 + C.
+    erlang:system_time(micro_seconds).
 
 unixtime_nano() ->
-    {A, B, C} = erlang:now(),
-    A * 1000000000000 + B*1000000 + C.
+    erlang:system_time(nano_seconds).
 
 local_unixtime() ->
     unixtime() + zone_diff_sec().
